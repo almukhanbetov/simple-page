@@ -1,0 +1,15 @@
+name: Debug SSH Key
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверить длину и хеш ключа
+        run: |
+          echo "${{ secrets.VPS_SSH_KEY }}" > key.pem
+          echo "🔐 Длина ключа: $(cat key.pem | wc -l) строк"
+          echo "🔐 Хеш ключа (SHA256):"
+          sha256sum key.pem
