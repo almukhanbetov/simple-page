@@ -1,0 +1,17 @@
+name: Test SSH Connection
+
+on:
+  workflow_dispatch:  # 🔹 Это разрешает ручной запуск из GitHub
+
+jobs:
+  ssh-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка SSH-подключения к VPS
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: uptime
