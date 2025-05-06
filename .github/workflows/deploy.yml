@@ -1,7 +1,6 @@
-name: Deploy to VPS
+name: Deploy via SSH
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -11,31 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Copy files to VPS via SSH
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          source: "."
-          target: "/var/www/simple-page"
-          rm: true
-          debug: true
+    - name: Check if index.html exists
+      run: ls -la site/index.html
 
-      - name: Run Docker on VPS
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          script: |
-            cd /var/www/simple-page
-            docker stop simple-page || true
-            docker rm simple-page || true
-            docker build -t simple-page .
-            docker run -d -p 8081:8081 --name simple-page simple-page
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+          set -e
+          cd /var/www/simple-page
+          docker stop simple-page || true
+          docker rm simple-page || true
+          export DOCKER_BUILDKIT=1
+          docker build -t simple-page .
+          docker run -d -p 8081:8081 --name simple-page simple-page
